@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos CSS de ambos códigos aquí... */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #fcfc6f;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin: 50px;
+        }
+
+        .input-container {
+            margin: 10px 0;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: aquamarine;
+            color: black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: red;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        .tower-container {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .tower {
+            width: 20px;
+            background-color: blue;
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            justify-content: flex-end;
+            height: 200px; /* Aumenta la altura de las torres */
+        }
+
+        .disk {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            margin: 2px;
+        }
+
+        #moveList {
+            margin-top: 40px;
+            margin: 20px;
+            font-weight: bold;
+        }
+    </style>
+    <title>Menú</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Selecciona la Operación: </h1>
+        <button id="hanoiButton">Torres de Hanói</button>
+        <button id="changeCalculatorButton">Calculadora de Cambio</button>
+    </div>
+    <!-- Ahora, las torres de Hanói se muestran por defecto -->
+    <div id="hanoiContainer" class="hidden">
+        <!-- Código de las Torres de Hanói aquí... -->
+        <div class="tower-container">
+            <div class="tower" id="tower1"></div>
+            <div class="tower" id="tower2"></div>
+            <div class="tower" id="tower3"></div>
+        <button id="startButton">Comenzar</button>
+        <ul id="moveList"></ul>
+        </div>
+    </div>
+    <div id="changeCalculatorContainer" class="hidden">
+        <!-- Código de la Calculadora de Cambio aquí... -->
+        <fieldset>
+            <h1>Calculadora de Cambio</h1>
+            <div class="input-container">
+                <label for="purchaseAmount">Monto de Compra:</label>
+                <input type="number" id="purchaseAmount" step="0.01">
+            </div>
+            <div class="input-container">
+                <label for="amountPaid">Monto Pagado:</label>
+                <input type="number" id="amountPaid" step="0.01">
+            </div>
+            <button id="calculateChange">Calcular Cambio</button>
+            <div id="changeResult" class="hidden">
+                <h2>Cambio:</h2>
+                <ul id="changeList"></ul>
+            </div>
+        </fieldset>
+    <script>
+        // JavaScript para manejar la selección de opciones aquí
+        const hanoiButton = document.getElementById("hanoiButton");
+        const changeCalculatorButton = document.getElementById("changeCalculatorButton");
+        const hanoiContainer = document.getElementById("hanoiContainer");
+        const changeCalculatorContainer = document.getElementById("changeCalculatorContainer");
+
+        hanoiButton.addEventListener("click", () => {
+            hanoiContainer.classList.remove("hidden");
+            changeCalculatorContainer.classList.add("hidden");
+        });
+
+        changeCalculatorButton.addEventListener("click", () => {
+            hanoiContainer.classList.add("hidden");
+            changeCalculatorContainer.classList.remove("hidden");
+        });
+
+        // Código de las Torres de Hanói...
+
+        class TowerOfHanoi {
+            constructor(disks) {
+                this.towers = [[], [], []];
+                this.moves = [];
+                this.disks = disks;
+                this.init(disks);
+            }
+
+            init(disks) {
+                for (let i = disks; i >= 1; i--) {
+                    this.towers[0].push(i);
+                }
+            }
+
+            moveDisk(from, to) {
+                const disk = this.towers[from].pop();
+                this.towers[to].push(disk);
+                this.moves.push(`Mover disco ${disk} de Torre ${from + 1} a Torre ${to + 1}`);
+            }
+
+            solve() {
+                this.solveHanoi(this.disks, 0, 2, 1);
+            }
+
+            solveHanoi(n, from, to, aux) {
+                if (n === 1) {
+                    this.moveDisk(from, to);
+                } else {
+                    this.solveHanoi(n - 1, from, aux, to);
+                    this.moveDisk(from, to);
+                    this.solveHanoi(n - 1, aux, to, from);
+                }
+            }
+        }
+
+        const towers = document.querySelectorAll(".tower");
+        const startButton = document.getElementById("startButton");
+        const moveList = document.getElementById("moveList");
+
+        let game;
+
+        startButton.addEventListener("click", () => {
+            const numberOfDisks = parseInt(prompt("Ingrese el número de discos:"));
+            if (!isNaN(numberOfDisks) && numberOfDisks > 0) {
+                game = new TowerOfHanoi(numberOfDisks);
+                startButton.disabled = true;
+                startGame();
+            } else {
+                alert("Ingrese un número válido de discos.");
+            }
+        });
+
+        function startGame() {
+            const diskElements = document.querySelectorAll(".disk");
+            diskElements.forEach((disk) => disk.remove());
+
+            towers.forEach((tower, index) => {
+                game.towers[index].forEach((diskSize) => {
+                    const disk = document.createElement("div");
+                    disk.className = "disk";
+                    disk.style.width = `${20 + diskSize * 10}px`;
+                    tower.appendChild(disk);
+                });
+            });
+
+            setTimeout(() => {
+                game.solve();
+                moveDisks(game.moves);
+                startButton.disabled = false;
+            }, 1000);
+        }
+
+        function moveDisks(moves) {
+            const delay = 1000;
+            let index = 0;
+
+            function displayNextMove() {
+                if (index < moves.length) {
+                    const li = document.createElement("li");
+                    li.textContent = moves[index];
+                    moveList.appendChild(li);
+                    index++;
+                    setTimeout(displayNextMove, delay);
+                }
+            }
+
+            displayNextMove();
+        }
+
+        // Código de la Calculadora de Cambio...
+
+        class ChangeCalculator {
+            constructor() {
+                this.denominations = [
+                    2000, 1000, 500, 100, 50, 20, 10, 5, 1, 0.5, 0.2, 0.1, 0.05, 0.01
+                ];
+            }
+
+            calculateChange(purchaseAmount, amountPaid) {
+                const changeAmount = (amountPaid * 100) - (purchaseAmount * 100); // Convertir a centavos
+                const changeList = [];
+
+                let remainingChange = changeAmount;
+
+                for (const denomination of this.denominations) {
+                    const count = Math.floor(remainingChange / denomination);
+                    if (count > 0) {
+                        changeList.push({ denomination: denomination / 100, count });
+                        remainingChange = (remainingChange % denomination).toFixed(2); // Redondear a 2 decimales
+                    }
+                }
+
+                return changeList;
+            }
+        }
+
+        const calculator = new ChangeCalculator();
+
+        const calculateChangeButton = document.getElementById("calculateChange");
+        calculateChangeButton.addEventListener("click", () => {
+            const purchaseAmountInput = document.getElementById("purchaseAmount");
+            const amountPaidInput = document.getElementById("amountPaid");
+            const changeResult = document.getElementById("changeResult");
+            const changeList = document.getElementById("changeList");
+
+            const purchaseAmount = parseFloat(purchaseAmountInput.value);
+            const amountPaid = parseFloat(amountPaidInput.value);
+
+            if (isNaN(purchaseAmount) || isNaN(amountPaid) || purchaseAmount >= amountPaid) {
+                alert("Ingrese montos válidos.");
+                return;
+            }
+
+            const change = calculator.calculateChange(purchaseAmount, amountPaid);
+
+            changeList.innerHTML = "";
+            change.forEach((item) => {
+                const li = document.createElement("li");
+                li.textContent = `${item.count} x ${item.denomination.toFixed(2)} pesos`;
+                changeList.appendChild(li);
+            });
+
+            changeResult.classList.remove("hidden");
+        });
+    </script>
+    </div>
+</body>
+</html>
